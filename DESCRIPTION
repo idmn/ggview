@@ -12,3 +12,5 @@ RoxygenNote: 7.2.1
 Imports: 
     ggplot2,
     rstudioapi
+URL: https://github.com/idmn/ggview
+BugReports: https://github.com/idmn/ggview/issues
