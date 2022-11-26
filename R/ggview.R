@@ -50,5 +50,5 @@ ggview <- function(plot = ggplot2::last_plot(),
   html_content <- gsub("{{file}}", basename(path_file), html_template, fixed = TRUE)
   writeLines(html_content, path_html)
   rstudioapi::viewer(path_html)
-  invisible(p)
+  invisible(plot)
 }
