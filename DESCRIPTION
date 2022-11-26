@@ -13,3 +13,4 @@ Imports:
     rstudioapi
 URL: https://github.com/idmn/ggview
 BugReports: https://github.com/idmn/ggview/issues
+Roxygen: list(markdown = TRUE)

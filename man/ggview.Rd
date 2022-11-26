@@ -33,8 +33,8 @@ from the plot theme.}
 }
 \description{
 Preview what a ggplot would look like is you save it to a file.
-  Set picture parameters as you would set them in [ggplot2::ggsave] and see
-  the result in RStudio viewer.
+Set picture parameters as you would set them in \link[ggplot2:ggsave]{ggplot2::ggsave} and see
+the result in RStudio viewer.
 }
 \examples{
 \dontrun{
