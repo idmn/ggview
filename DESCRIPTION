@@ -1,7 +1,7 @@
 Package: ggview
 Type: Package
 Title: ggplot picture previewer
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: person("Iaroslav", "Domin", email = "ya.domin@gmail.com", role = c("aut", "cre"))
 Description: Preview what a ggplot would look like if you save it to a file. 
 License: GPL-2
