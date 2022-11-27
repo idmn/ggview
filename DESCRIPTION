@@ -1,6 +1,6 @@
 Package: ggview
 Type: Package
-Title: Ggplot picture previewer
+Title: ggplot picture previewer
 Version: 0.1.0
 Authors@R: person("Iaroslav", "Domin", email = "ya.domin@gmail.com", role = c("aut", "cre"))
 Description: Preview what a ggplot would look like if you save it to a file. 
@@ -10,7 +10,8 @@ LazyData: true
 RoxygenNote: 7.2.1
 Imports: 
     ggplot2,
-    rstudioapi
+    rstudioapi,
+    magick
 URL: https://github.com/idmn/ggview
 BugReports: https://github.com/idmn/ggview/issues
 Roxygen: list(markdown = TRUE)

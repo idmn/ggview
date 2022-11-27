@@ -20,7 +20,7 @@
 #'
 #' @export
 ggview <- function(plot = ggplot2::last_plot(),
-                   device = c("png", "jpeg", "bmp", "svg"),
+                   device = c("png", "jpeg", "bmp", "svg", "pdf"),
                    scale = 1,
                    width,
                    height,
@@ -50,11 +50,22 @@ ggview <- function(plot = ggplot2::last_plot(),
     bg = bg
   )
 
-  path_html <- paste0(random_name, ".html")
-  html_template <- readLines(system.file("ggview.html", package = "ggview"))
-  html_content <- gsub("{{file}}", basename(path_file), html_template, fixed = TRUE)
-  writeLines(html_content, path_html)
-  rstudioapi::viewer(path_html)
+  if (rstudioapi::isAvailable()) {
+    path_html <- paste0(random_name, ".html")
+    html_template <- readLines(system.file("ggview.html", package = "ggview"))
+    html_content <- gsub("{{file}}", basename(path_file), html_template, fixed = TRUE)
+    writeLines(html_content, path_html)
+    rstudioapi::viewer(path_html)
+  } else {
+    if (device == "svg") {
+      img <- magick::image_read_svg(path_file)
+    } else if (device == "pdf") {
+      img <- magick::image_read_pdf(path_file)
+    } else {
+      img <- magick::image_read(path_file)
+    }
+    plot(img)
+  }
   invisible(plot)
 }
 
