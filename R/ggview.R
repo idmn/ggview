@@ -31,8 +31,13 @@ ggview <- function(plot = ggplot2::last_plot(),
 
   device <- match.arg(device)
   path_dir <- file.path(tempdir(), "ggview")
+
   if (!dir.exists(path_dir)) dir.create(path_dir)
-  path_file <- file.path(path_dir, paste0("plot.", device))
+  list.files(path_dir)
+  ggview_cleanup(path_dir)
+
+  random_name <- tempfile(pattern = "ggview_", tmpdir = path_dir)
+  path_file <- paste0(random_name, paste0(".", device))
 
   ggplot2::ggsave(
     filename = path_file,
@@ -45,10 +50,22 @@ ggview <- function(plot = ggplot2::last_plot(),
     bg = bg
   )
 
-  path_html <- file.path(path_dir, "ggview.html")
+  path_html <- paste0(random_name, ".html")
   html_template <- readLines(system.file("ggview.html", package = "ggview"))
   html_content <- gsub("{{file}}", basename(path_file), html_template, fixed = TRUE)
   writeLines(html_content, path_html)
   rstudioapi::viewer(path_html)
   invisible(plot)
+}
+
+#' @description Removes all plots+html pairs in the ggview tmp directory but the
+#'   n most recent ones.
+#'
+#' @noRd
+ggview_cleanup <- function(dir) {
+  file_info <- file.info(list.files(dir, full.names = TRUE))
+  file_info <- file_info[order(file_info$ctime, decreasing = TRUE),]
+  files_sorted <- rownames(file_info)
+  to_remove <- files_sorted[seq_along(files_sorted) > 18]
+  file.remove(to_remove)
 }
