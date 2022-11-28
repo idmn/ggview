@@ -1,5 +1,5 @@
 #' @title Ggplot picture previewer
-#' @description Preview what a ggplot would look like is you save it to a file.
+#' @description Preview what a ggplot would look like if you save it to a file.
 #'   Set picture parameters as you would set them in [ggplot2::ggsave] and see
 #'   the result in RStudio viewer.
 #'
@@ -30,6 +30,7 @@ ggview <- function(plot = ggplot2::last_plot(),
                    ) {
 
   device <- match.arg(device)
+  units <- match.arg(units)
   path_dir <- file.path(tempdir(), "ggview")
 
   if (!dir.exists(path_dir)) dir.create(path_dir)
