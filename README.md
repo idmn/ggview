@@ -1,4 +1,4 @@
-ggview
+# ggview <img src="man/figures/logo.svg" align="right" height="139" />
 -----------
 
 Choose the right picture size for your ggplot without leaving RStudio.
