@@ -1,16 +1,283 @@
-<style>
-  div {
-    background: url('{{file}}') no-repeat;
-    background-size: contain;
-    background-color: #cccccc;
-      border: 1px solid #cccccc;
-    width: 99%;
-    height: 99%;
-  }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ggview</title>
+    <style>
+        /* Reset default margins and paddings */
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Hide scrollbars */
+        }
 
-body {
-  background-color: #cccccc;
-}
-</style>
+        .viewport {
+            width: 100vw; /* Full viewport width */
+            height: 100vh; /* Full viewport height */
+            overflow: hidden; /* Hide overflowing content */
+            position: relative; /* Relative positioning for child elements */
+            background-color: #cccccc; /* Background color */
+            cursor: zoom-in; /* Initial cursor */
+            touch-action: none; /* Prevent default touch actions */
+        }
 
-<div></div>
+        .content {
+            position: absolute; /* Absolute positioning for dragging */
+            left: 0;
+            top: 0;
+        }
+
+        .content img {
+            display: block; /* Remove extra spacing below image */
+            user-select: none; /* Prevent text selection */
+            -webkit-user-drag: none; /* Prevent image dragging in Safari */
+        }
+    </style>
+</head>
+<body>
+    <div class="viewport">
+        <div class="content">
+            <img src="{{file}}" alt="Sample Image">
+        </div>
+    </div>
+    <script>
+        window.onload = function() {
+            const viewport = document.querySelector('.viewport');
+            const content = document.querySelector('.content');
+            const img = content.querySelector('img');
+
+            let viewportWidth, viewportHeight;
+            let imgNaturalWidth, imgNaturalHeight;
+            const padding = 20;
+            let initialImgWidth, initialImgHeight;
+            let scaledImgWidth, scaledImgHeight;
+            let contentWidth, contentHeight;
+
+            let isZoomedIn = false;
+
+            // Variables for dragging
+            let isDragging = false;
+            let dragStartX, dragStartY;
+            let contentStartX, contentStartY;
+
+            // Wait for the image to load to get its natural dimensions
+            img.onload = function() {
+                initialize();
+            };
+
+            // If the image is cached and already loaded
+            if (img.complete) {
+                initialize();
+            }
+
+            function initialize() {
+                // Get the natural size of the image
+                imgNaturalWidth = img.naturalWidth;
+                imgNaturalHeight = img.naturalHeight;
+
+                calculateSizes();
+
+                // Set initial position
+                limitContentPosition();
+
+                // Add event listeners
+                addEventListeners();
+            }
+
+            function calculateSizes() {
+                // Get the viewport dimensions
+                viewportWidth = viewport.clientWidth;
+                viewportHeight = viewport.clientHeight;
+
+                // Calculate the maximum size the image can be within the viewport minus padding
+                const maxImgWidth = viewportWidth - padding * 2;
+                const maxImgHeight = viewportHeight - padding * 2;
+
+                // Calculate aspect ratios
+                const imgAspectRatio = imgNaturalWidth / imgNaturalHeight;
+                const viewportAspectRatio = maxImgWidth / maxImgHeight;
+
+                if (imgAspectRatio > viewportAspectRatio) {
+                    // Image is wider than viewport
+                    initialImgWidth = maxImgWidth;
+                    initialImgHeight = maxImgWidth / imgAspectRatio;
+                } else {
+                    // Image is taller than viewport
+                    initialImgHeight = maxImgHeight;
+                    initialImgWidth = maxImgHeight * imgAspectRatio;
+                }
+
+                if (isZoomedIn) {
+                    // Scale up the image size by a factor of 2
+                    scaledImgWidth = initialImgWidth * 2;
+                    scaledImgHeight = initialImgHeight * 2;
+                } else {
+                    // Use initial size
+                    scaledImgWidth = initialImgWidth;
+                    scaledImgHeight = initialImgHeight;
+                }
+
+                // Set the size of the content div (image plus padding)
+                contentWidth = scaledImgWidth + padding * 2;
+                contentHeight = scaledImgHeight + padding * 2;
+                content.style.width = contentWidth + 'px';
+                content.style.height = contentHeight + 'px';
+
+                // Set the size of the image
+                img.style.width = scaledImgWidth + 'px';
+                img.style.height = scaledImgHeight + 'px';
+
+                // Add padding around the image
+                img.style.margin = padding + 'px';
+
+                // Adjust content position if it was moved
+                limitContentPosition();
+            }
+
+            function addEventListeners() {
+                // Click to toggle zoom
+                viewport.addEventListener('click', function(e) {
+                    // Ignore clicks that started as a drag
+                    if (isDragging) {
+                        isDragging = false;
+                        return;
+                    }
+
+                    // Calculate click position relative to the content
+                    const rect = content.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    const clickY = e.clientY - rect.top;
+
+                    // Calculate click position ratio
+                    const clickXRatio = clickX / contentWidth;
+                    const clickYRatio = clickY / contentHeight;
+
+                    // Toggle zoom state
+                    isZoomedIn = !isZoomedIn;
+
+                    // Change cursor style
+                    if (isZoomedIn) {
+                        viewport.style.cursor = 'zoom-out';
+                    } else {
+                        viewport.style.cursor = 'zoom-in';
+                    }
+
+                    // Recalculate sizes
+                    calculateSizes();
+
+                    // Adjust content position to focus on clicked point
+                    // Calculate new content position so that the clicked point remains under the cursor
+                    const newContentLeft = viewportWidth / 2 - clickXRatio * contentWidth;
+                    const newContentTop = viewportHeight / 2 - clickYRatio * contentHeight;
+
+                    // Set the content position
+                    content.style.left = newContentLeft + 'px';
+                    content.style.top = newContentTop + 'px';
+
+                    // Limit the content position to stay within bounds
+                    limitContentPosition();
+
+                });
+
+                // Dragging functionality
+                content.addEventListener('mousedown', function(e) {
+                    if (isZoomedIn) {
+                        isDragging = true;
+                        dragStartX = e.clientX;
+                        dragStartY = e.clientY;
+                        contentStartX = parseFloat(content.style.left) || 0;
+                        contentStartY = parseFloat(content.style.top) || 0;
+                        viewport.style.cursor = 'grabbing';
+                        e.preventDefault(); // Prevent text selection
+                    }
+                });
+
+                document.addEventListener('mousemove', function(e) {
+                    if (isDragging && isZoomedIn) {
+                        const deltaX = e.clientX - dragStartX;
+                        const deltaY = e.clientY - dragStartY;
+                        let newLeft = contentStartX + deltaX;
+                        let newTop = contentStartY + deltaY;
+
+                        // Limit the dragging to the bounds of the content
+                        limitContentPosition(newLeft, newTop);
+                    }
+                });
+
+                document.addEventListener('mouseup', function() {
+                    if (isDragging) {
+                        isDragging = false;
+                        viewport.style.cursor = isZoomedIn ? 'zoom-out' : 'zoom-in';
+                    }
+                });
+
+                // Prevent image dragging default behavior
+                img.addEventListener('dragstart', function(e) {
+                    e.preventDefault();
+                });
+
+                // Touchpad scrolling (wheel event)
+                viewport.addEventListener('wheel', function(e) {
+                    if (isZoomedIn) {
+                        e.preventDefault(); // Prevent default scrolling
+                        const deltaX = -e.deltaX;
+                        const deltaY = -e.deltaY;
+                        let currentLeft = parseFloat(content.style.left) || 0;
+                        let currentTop = parseFloat(content.style.top) || 0;
+                        let newLeft = currentLeft + deltaX;
+                        let newTop = currentTop + deltaY;
+
+                        // Limit the dragging to the bounds of the content
+                        limitContentPosition(newLeft, newTop);
+                    }
+                }, { passive: false });
+
+                // Recalculate sizes on window resize
+                window.addEventListener('resize', function() {
+                    calculateSizes();
+                });
+            }
+
+            function limitContentPosition(newLeft = null, newTop = null) {
+                if (newLeft === null) {
+                    newLeft = parseFloat(content.style.left) || 0;
+                }
+                if (newTop === null) {
+                    newTop = parseFloat(content.style.top) || 0;
+                }
+
+                let maxLeft, minLeft, maxTop, minTop;
+
+                // Horizontal limits
+                if (contentWidth <= viewportWidth) {
+                    // Content is smaller than viewport width, center it
+                    minLeft = maxLeft = (viewportWidth - contentWidth) / 2;
+                } else {
+                    // Content is wider, can be dragged
+                    maxLeft = 0;
+                    minLeft = viewportWidth - contentWidth;
+                }
+
+                // Vertical limits
+                if (contentHeight <= viewportHeight) {
+                    // Content is smaller than viewport height, center it
+                    minTop = maxTop = (viewportHeight - contentHeight) / 2;
+                } else {
+                    // Content is taller, can be dragged
+                    maxTop = 0;
+                    minTop = viewportHeight - contentHeight;
+                }
+
+                // Clamp the position values
+                if (newLeft > maxLeft) newLeft = maxLeft;
+                if (newLeft < minLeft) newLeft = minLeft;
+                if (newTop > maxTop) newTop = maxTop;
+                if (newTop < minTop) newTop = minTop;
+
+                content.style.left = newLeft + 'px';
+                content.style.top = newTop + 'px';
+            }
+        };
+    </script>
+</body>
+</html>
