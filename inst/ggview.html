@@ -57,6 +57,7 @@
 
             // Variables for dragging
             let isDragging = false;
+            let clickPrevented = false;
             let dragStartX, dragStartY;
             let contentStartX, contentStartY;
 
@@ -136,10 +137,10 @@
 
             function addEventListeners() {
                 // Click to toggle zoom
-                viewport.addEventListener('click', function(e) {
-                    // Ignore clicks that started as a drag
-                    if (isDragging) {
-                        isDragging = false;
+                content.addEventListener('click', function(e) {
+                    // Ignore clicks that were part of a drag
+                    if (clickPrevented) {
+                        clickPrevented = false;
                         return;
                     }
 
@@ -177,18 +178,21 @@
                     // Limit the content position to stay within bounds
                     limitContentPosition();
 
+                    e.stopPropagation(); // Prevent event from bubbling up
                 });
 
                 // Dragging functionality
                 content.addEventListener('mousedown', function(e) {
                     if (isZoomedIn) {
                         isDragging = true;
+                        clickPrevented = false;
                         dragStartX = e.clientX;
                         dragStartY = e.clientY;
                         contentStartX = parseFloat(content.style.left) || 0;
                         contentStartY = parseFloat(content.style.top) || 0;
                         viewport.style.cursor = 'grabbing';
                         e.preventDefault(); // Prevent text selection
+                        e.stopPropagation(); // Prevent event from bubbling up
                     }
                 });
 
@@ -196,6 +200,12 @@
                     if (isDragging && isZoomedIn) {
                         const deltaX = e.clientX - dragStartX;
                         const deltaY = e.clientY - dragStartY;
+
+                        // If mouse moved significantly, set clickPrevented to true
+                        if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+                            clickPrevented = true;
+                        }
+
                         let newLeft = contentStartX + deltaX;
                         let newTop = contentStartY + deltaY;
 
