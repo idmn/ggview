@@ -5,20 +5,6 @@
 #'
 #' @param device Device to use. Can be one of "png", "jpeg", "bmp" or "svg".
 #' @inheritParams ggplot2::ggsave
-#'
-#' @examples
-#' \dontrun{
-#' library(ggplot2)
-#' p <-
-#'   ggplot(mtcars, aes(wt, mpg)) +
-#'   geom_point() +
-#'   ggtitle("My awesome plot")
-#'
-#' ggview(width = 3, height = 3)
-#' ggview(width = 5, height = 3)
-#' }
-#'
-#' @export
 ggview <- function(plot = ggplot2::last_plot(),
                    device = c("png", "jpeg", "bmp", "svg"),
                    scale = 1,
@@ -28,6 +14,7 @@ ggview <- function(plot = ggplot2::last_plot(),
                    dpi = 300,
                    bg = NULL
                    ) {
+  plot <- drop_ggview_class(plot)
 
   device <- match.arg(device)
   units <- match.arg(units)
@@ -63,10 +50,10 @@ ggview <- function(plot = ggplot2::last_plot(),
 #'   n most recent ones.
 #'
 #' @noRd
-ggview_cleanup <- function(dir) {
+ggview_cleanup <- function(dir, n = 50) {
   file_info <- file.info(list.files(dir, full.names = TRUE))
   file_info <- file_info[order(file_info$ctime, decreasing = TRUE),]
   files_sorted <- rownames(file_info)
-  to_remove <- files_sorted[seq_along(files_sorted) > 18]
+  to_remove <- files_sorted[seq_along(files_sorted) > n]
   file.remove(to_remove)
 }
