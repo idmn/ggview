@@ -28,6 +28,10 @@ arguments are expressed: \code{"in"}, \code{"cm"}, \code{"mm"} or \code{"px"}.}
 \item{bg}{Background colour. If \code{NULL}, uses the \code{plot.background} fill value
 from the plot theme.}
 }
+\value{
+An object of class \code{canvas} that can be added to a \code{ggplot} object
+to specify the plot dimensions.
+}
 \description{
 A canvas specification essentially comprises a set of parameters
 from \code{\link[ggplot2:ggsave]{ggplot2::ggsave()}}. When a plot with this canvas specification is
@@ -35,7 +39,7 @@ printed, it is rendered as it would appear if saved to a file with the
 specified dimensions.
 }
 \examples{
-\dontrun{
+\dontshow{if (rstudioapi::isAvailable()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 library(ggplot2)
 p <-
   ggplot(mtcars, aes(wt, mpg)) +
@@ -44,6 +48,5 @@ p <-
 
 p + canvas(3, 3)
 p + canvas(5, 3, dpi = 400)
-}
-
+\dontshow{\}) # examplesIf}
 }

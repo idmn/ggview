@@ -26,6 +26,9 @@ save_ggplot(p, "my_plot.png")
 ### Installation
 
 ```r
+install.packages("ggview")
+
+# development version
 remotes::install_github("idmn/ggview")
 ```
 

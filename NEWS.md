@@ -1,3 +1,6 @@
+# ggview 0.2.1
+* CRAN release.
+
 # ggview 0.2.0
 * Implemented `canvas()` element to be used instead of running `ggview()` 
 directly.
@@ -5,5 +8,4 @@ directly.
 * Added `save_ggplot()` function to save a ggplot with canvas parameters.
 
 # ggview 0.1.0
-
-* Initialize package.
+* Initial release.

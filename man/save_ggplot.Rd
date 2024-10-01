@@ -55,6 +55,10 @@ a prompt will appear asking to create a new directory when necessary.}
 \item{...}{Other arguments passed on to the graphics device function,
 as specified by \code{device}.}
 }
+\value{
+The function is called for its side effects: it saves the plot to a
+file and returns the file path invisibly.
+}
 \description{
 Saves a ggplot object just like \code{\link[ggplot2:ggsave]{ggplot2::ggsave()}}. If the plot
 has a \code{\link[=canvas]{canvas()}} specified, these canvas parameters are used.
@@ -68,9 +72,7 @@ p <-
   ggtitle("My awesome plot") +
   canvas(8, 6)
 
-\dontrun{
 temp_file <- tempfile(fileext = ".png")
 save_ggplot(p, temp_file)
-}
 
 }

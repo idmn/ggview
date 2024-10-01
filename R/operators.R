@@ -7,16 +7,8 @@
 #' works.
 #'
 #' @param x,y If `x` is NULL, will return `y`; otherwise returns `x`.
-#' @export
 #' @name op-null-default
-#' @examples
-#' 1 %||% 2
-#' NULL %||% 2
+#' @noRd 
 `%||%` <- function(x, y) {
   if (is.null(x)) y else x
-}
-
-# Reexport from base on newer versions of R to avoid conflict messages
-if (exists("%||%", envir = baseenv())) {
-  `%||%` <- get("%||%", envir = baseenv())
 }
