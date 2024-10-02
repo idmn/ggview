@@ -2,6 +2,7 @@
 -----------
 
 <!-- badges: start -->
+[![CRAN status](https://www.r-pkg.org/badges/version/ggview)](https://CRAN.R-project.org/package=ggview)
 [![R-CMD-check](https://github.com/idmn/ggview/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/idmn/ggview/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
