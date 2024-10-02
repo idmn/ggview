@@ -5,6 +5,7 @@
 #'
 #' @param device Device to use. Can be one of "png", "jpeg", "bmp" or "svg".
 #' @inheritParams ggplot2::ggsave
+#' @noRd
 ggview <- function(plot = ggplot2::last_plot(),
                    device = c("png", "jpeg", "bmp", "svg"),
                    scale = 1,

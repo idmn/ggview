@@ -6,6 +6,7 @@ test_that("save_ggplot works with normal ggplot", {
   temp_file <- tempfile(fileext = ".png")
   save_ggplot(p, temp_file)
   expect_true(file.exists(temp_file))
+  file.remove(temp_file)
 })
 
 test_that("save_ggplot works with canvas", {
@@ -17,9 +18,11 @@ test_that("save_ggplot works with canvas", {
   temp_file <- tempfile(fileext = ".png")
   save_ggplot(p, temp_file)
   expect_true(file.exists(temp_file))
+  file.remove(temp_file)
 })
 
 test_that("save_ggplot saves with correct dimensions", {
+  skip_if_not_installed("png")
   library(ggplot2)
   p <- ggplot(mtcars, aes(wt, mpg)) +
     geom_point() +
@@ -30,4 +33,5 @@ test_that("save_ggplot saves with correct dimensions", {
   expect_true(file.exists(temp_file))
   info <- png::readPNG(temp_file)
   expect_equal(dim(info)[1:2], c(600, 800))
+  file.remove(temp_file)
 })

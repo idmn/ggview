@@ -3,7 +3,6 @@
 S3method(ggplot_add,canvas)
 S3method(plot,ggview)
 S3method(print,ggview)
-export("%||%")
 export(canvas)
 export(save_ggplot)
 importFrom(ggplot2,ggplot_add)

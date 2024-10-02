@@ -5,8 +5,11 @@
 #'   specified dimensions.
 #'
 #' @inheritParams ggplot2::ggsave
-#' @examples
-#' \dontrun{
+#' 
+#' @return An object of class `canvas` that can be added to a `ggplot` object
+#'   to specify the plot dimensions.
+#' 
+#' @examplesIf rstudioapi::isAvailable()
 #' library(ggplot2)
 #' p <-
 #'   ggplot(mtcars, aes(wt, mpg)) +
@@ -15,7 +18,6 @@
 #'
 #' p + canvas(3, 3)
 #' p + canvas(5, 3, dpi = 400)
-#' }
 #'
 #' @export
 canvas <- function(width, height, units = c("in", "cm", "mm", "px"),

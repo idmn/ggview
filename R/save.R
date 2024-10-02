@@ -5,6 +5,10 @@
 #' @inheritParams ggplot2::ggsave
 #' @param plot The ggplot object to save.
 #' @param file File to save the plot to.
+#' 
+#' @return The function is called for its side effects: it saves the plot to a  
+#'   file and returns the file path invisibly.
+#'
 #' @examples
 #' library(ggplot2)
 #' p <-
@@ -13,10 +17,8 @@
 #'   ggtitle("My awesome plot") +
 #'   canvas(8, 6)
 #'
-#' \dontrun{
 #' temp_file <- tempfile(fileext = ".png")
 #' save_ggplot(p, temp_file)
-#' }
 #'
 #' @export
 save_ggplot <- function(plot, file,
