@@ -37,7 +37,7 @@ canvas <- function(width, height, units = c("in", "cm", "mm", "px"),
 
 #' @importFrom ggplot2 ggplot_add
 #' @export
-ggplot_add.canvas <- function(object, plot, object_name) {
+ggplot_add.canvas <- function(object, plot, object_name, ...) {
   plot$canvas <- object
   class(plot) <- unique(c("ggview", class(plot)))
   plot

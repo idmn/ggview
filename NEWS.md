@@ -1,3 +1,6 @@
+# ggview 0.2.2
+* Added `...` to `ggplot_add.canvas()` method to maintain compatibility with upcoming ggplot2 generic signature changes.
+
 # ggview 0.2.1
 * CRAN release.
 
