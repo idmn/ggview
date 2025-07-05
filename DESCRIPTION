@@ -1,7 +1,7 @@
 Package: ggview
 Type: Package
 Title: 'ggplot2' Picture Previewer
-Version: 0.2.1
+Version: 0.2.2
 Authors@R: person("Iaroslav", "Domin", email = "ya.domin@gmail.com", role = c("aut", "cre", "cph"))
 Description: Preview what a 'ggplot2' plot would look like if you save it to a file. 
     Attach picture dimensions as a canvas() element and get an instant preview. 
