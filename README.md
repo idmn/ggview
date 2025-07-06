@@ -1,4 +1,4 @@
-# ggview <img src="man/figures/logo.svg" align="right" height="139" />
+# ggview <img src="man/figures/logo.svg" align="right" width="139" />
 -----------
 
 <!-- badges: start -->
