@@ -22,6 +22,7 @@
 #' @export
 canvas <- function(width, height, units = c("in", "cm", "mm", "px"),
                    dpi = 300, scale = 1, bg = "white") {
+  units <- match.arg(units)
   structure(
     list(
       width = width,

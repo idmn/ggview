@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ggview gallery</title>
+    <style>
+        :root {
+            --tile-width: 260px;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #cccccc;
+            font-family: sans-serif;
+        }
+
+        .back-nav {
+            position: fixed;
+            top: 12px;
+            left: 12px;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .back {
+            padding: 8px 10px;
+            color: #222;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 4px;
+            text-decoration: none;
+        }
+
+        .back-path {
+            color: #666;
+        }
+
+        .back-current {
+            color: #222;
+            font-weight: 500;
+        }
+
+        .back-separator {
+            margin: 0 7px;
+            color: #999;
+        }
+
+        .slider {
+            position: fixed;
+            right: 16px;
+            bottom: 16px;
+            z-index: 1;
+            padding: 8px;
+            background: #fff;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px #bbb;
+        }
+
+        .slider input {
+            width: 160px;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(var(--tile-width), 1fr));
+            gap: 20px;
+        }
+
+        .has-back {
+            margin-top: 44px;
+        }
+
+        .tile {
+            min-width: 0;
+            color: #222;
+            text-align: left;
+            text-decoration: none;
+        }
+
+        .thumbnail {
+            padding: 12px;
+            background: #fff;
+            box-shadow: 0 1px 3px #bbb;
+        }
+
+        .tile:hover .thumbnail {
+            box-shadow: 0 2px 8px #999;
+        }
+
+        .tile h2 {
+            margin: 0 0 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .thumbnail img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .folder {
+            display: flex;
+            min-height: 140px;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .folder span {
+            font-size: 52px;
+            color: #e6b94d;
+        }
+
+        .folder p {
+            margin: 0;
+            color: #666;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    {{navigation}}
+    <main class="{{gallery_class}}">
+        {{cards}}
+    </main>
+    <div class="slider">
+        <input id="thumbnail-size" type="range" min="140" max="700" value="260" aria-label="Thumbnail size">
+    </div>
+    <script>
+        const root = document.documentElement;
+        document.querySelector('#thumbnail-size').oninput = event => {
+            root.style.setProperty('--tile-width', event.target.value + 'px');
+        };
+    </script>
+</body>
+</html>

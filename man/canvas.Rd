@@ -40,7 +40,7 @@ printed, it is rendered as it would appear if saved to a file with the
 specified dimensions.
 }
 \examples{
-\dontshow{if (rstudioapi::isAvailable()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (rstudioapi::isAvailable()) withAutoprint(\{ # examplesIf}
 library(ggplot2)
 p <-
   ggplot(mtcars, aes(wt, mpg)) +

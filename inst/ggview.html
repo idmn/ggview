@@ -17,7 +17,7 @@
             overflow: hidden; /* Hide overflowing content */
             position: relative; /* Relative positioning for child elements */
             background-color: #cccccc; /* Background color */
-            cursor: zoom-in; /* Initial cursor */
+            cursor: default;
             touch-action: none; /* Prevent default touch actions */
         }
 
@@ -31,10 +31,108 @@
             display: block; /* Remove extra spacing below image */
             user-select: none; /* Prevent text selection */
             -webkit-user-drag: none; /* Prevent image dragging in Safari */
+            cursor: zoom-in;
+        }
+
+        .back-nav {
+            position: fixed;
+            top: 12px;
+            left: 12px;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: sans-serif;
+            font-size: 13px;
+        }
+
+        .back {
+            padding: 8px 10px;
+            color: #222;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 4px;
+            text-decoration: none;
+        }
+
+        .back-path {
+            color: #666;
+        }
+
+        .back-current {
+            color: #222;
+            font-weight: 500;
+        }
+
+        .back-separator {
+            margin: 0 7px;
+            color: #999;
+        }
+
+        .canvas-info {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            z-index: 1;
+        }
+
+        .canvas-icon {
+            display: flex;
+            width: 18px;
+            height: 18px;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid #777;
+            border-radius: 50%;
+            font-family: sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .canvas-icon:hover {
+            color: white;
+            background: #777;
+            border-color: #777;
+        }
+
+        .canvas-info.is-pinned .canvas-icon {
+            color: white;
+            background: #555;
+            border-color: #555;
+        }
+
+        .canvas-card {
+            display: none;
+            position: absolute;
+            top: 26px;
+            right: 0;
+            width: max-content;
+            padding: 9px 10px;
+            color: #333;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 4px;
+            box-shadow: 0 1px 3px #999;
+            font-family: sans-serif;
+            font-size: 12px;
+            line-height: 1.5;
+            white-space: nowrap;
+        }
+
+        .canvas-info:hover .canvas-card,
+        .canvas-info.is-pinned .canvas-card {
+            display: block;
         }
     </style>
 </head>
 <body>
+    {{back_button}}
+    {{canvas_info}}
     <div class="viewport">
         <div class="content">
             <img src="{{file}}" alt="Sample Image">
@@ -42,6 +140,30 @@
     </div>
     <script>
         window.onload = function() {
+            const canvasInfo = document.querySelector('.canvas-info');
+            if (canvasInfo) {
+                const canvasIcon = canvasInfo.querySelector('.canvas-icon');
+                try {
+                    canvasInfo.classList.toggle(
+                        'is-pinned',
+                        sessionStorage.getItem('ggview.canvas-info.open') === 'true'
+                    );
+                } catch {
+                    // Canvas info still works for this page when storage is unavailable.
+                }
+                canvasIcon.addEventListener('click', function() {
+                    canvasInfo.classList.toggle('is-pinned');
+                    try {
+                        sessionStorage.setItem(
+                            'ggview.canvas-info.open',
+                            canvasInfo.classList.contains('is-pinned')
+                        );
+                    } catch {
+                        // Pinning remains available for this page.
+                    }
+                });
+            }
+
             const viewport = document.querySelector('.viewport');
             const content = document.querySelector('.content');
             const img = content.querySelector('img');
@@ -137,30 +259,30 @@
 
             function addEventListeners() {
                 // Click to toggle zoom
-                content.addEventListener('click', function(e) {
+                img.addEventListener('click', function(e) {
                     // Ignore clicks that were part of a drag
                     if (clickPrevented) {
                         clickPrevented = false;
                         return;
                     }
 
-                    // Calculate click position relative to the content
-                    const rect = content.getBoundingClientRect();
+                    // Calculate click position relative to the image
+                    const rect = img.getBoundingClientRect();
                     const clickX = e.clientX - rect.left;
                     const clickY = e.clientY - rect.top;
 
                     // Calculate click position ratio
-                    const clickXRatio = clickX / contentWidth;
-                    const clickYRatio = clickY / contentHeight;
+                    const clickXRatio = clickX / scaledImgWidth;
+                    const clickYRatio = clickY / scaledImgHeight;
 
                     // Toggle zoom state
                     isZoomedIn = !isZoomedIn;
 
                     // Change cursor style
                     if (isZoomedIn) {
-                        viewport.style.cursor = 'zoom-out';
+                        img.style.cursor = 'zoom-out';
                     } else {
-                        viewport.style.cursor = 'zoom-in';
+                        img.style.cursor = 'zoom-in';
                     }
 
                     // Recalculate sizes
@@ -168,8 +290,8 @@
 
                     // Adjust content position to focus on clicked point
                     // Calculate new content position so that the clicked point remains under the cursor
-                    const newContentLeft = viewportWidth / 2 - clickXRatio * contentWidth;
-                    const newContentTop = viewportHeight / 2 - clickYRatio * contentHeight;
+                    const newContentLeft = viewportWidth / 2 - padding - clickXRatio * scaledImgWidth;
+                    const newContentTop = viewportHeight / 2 - padding - clickYRatio * scaledImgHeight;
 
                     // Set the content position
                     content.style.left = newContentLeft + 'px';
@@ -182,7 +304,7 @@
                 });
 
                 // Dragging functionality
-                content.addEventListener('mousedown', function(e) {
+                img.addEventListener('mousedown', function(e) {
                     if (isZoomedIn) {
                         isDragging = true;
                         clickPrevented = false;
@@ -217,7 +339,8 @@
                 document.addEventListener('mouseup', function() {
                     if (isDragging) {
                         isDragging = false;
-                        viewport.style.cursor = isZoomedIn ? 'zoom-out' : 'zoom-in';
+                        viewport.style.cursor = '';
+                        img.style.cursor = isZoomedIn ? 'zoom-out' : 'zoom-in';
                     }
                 });
 

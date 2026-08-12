@@ -1,4 +1,6 @@
 # ggview 0.2.2
+* Added an experimental `gallery()` list for browsing nested collections of
+  plots in one viewer page.
 * Added `...` to `ggplot_add.canvas()` method to maintain compatibility with upcoming ggplot2 generic signature changes.
 
 # ggview 0.2.1

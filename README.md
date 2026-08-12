@@ -24,6 +24,28 @@ p <-
 save_ggplot(p, "my_plot.png")
 ```
 
+### Galleries
+
+Use `gallery()` to preview several plots in one Viewer page. A gallery is a
+named list of ggplots and nested galleries; nested galleries appear as folders.
+The number of columns adapts to the Viewer width; use the thumbnail-size slider
+in the bottom-right corner to show more or fewer plots. Click a plot for its
+usual `ggview` preview, then use **Back to gallery** to return.
+
+```r
+plots <- list(
+  scatter = ggplot(mtcars, aes(wt, mpg)) + geom_point(),
+  bars = ggplot(mpg, aes(drv)) + geom_bar()
+)
+
+g <- as.gallery(list(
+  exploratory = plots,
+  diagnostics = list(residuals = ggplot(mtcars, aes(wt, mpg)) + geom_point())
+))
+g$exploratory$scatter # extract an individual ggplot
+g # opens a grid preview in the Viewer
+```
+
 ### Installation
 
 ```r
