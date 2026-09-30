@@ -1,0 +1,321 @@
+---
+title: "Collecting plots"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Collecting plots}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+A script that makes one plot can keep it in a variable. A script that makes forty
+needs somewhere to put them, and the answer is usually a list. A list holds the
+plots but nothing about them: not the size each one should be saved at, not the
+folder it belongs in, and not the better title somebody asked for afterwards.
+
+A plots collection holds all of that next to the plot, and keeps it *next to*
+the plot rather than in it. Nothing you change is written into the ggplot, so
+every change can be undone, and the same plot can be changed again and again
+without being rebuilt.
+
+```{r setup}
+library(ggview)
+library(ggplot2)
+library(tibble)
+```
+
+## Start a collection and add to it
+
+`plots_init()` starts one and `plots_append()` adds to it. The name is the
+plot's key, and slashes in it make folders later on. The collection's `path`
+says where its files go when it is written out.
+
+```{r}
+weight <- ggplot(mtcars, aes(wt, mpg, color = factor(cyl))) +
+  geom_point(size = 2) +
+  labs(title = "Heavier cars use more fuel", subtitle = "N = 32", color = "Cylinders")
+
+cylinders <- ggplot(mtcars, aes(factor(cyl))) +
+  geom_bar() +
+  labs(title = "Most of these cars are eight-cylinder")
+
+plots <- plots_init(name = "Engine notes", description = "Two plots from mtcars",
+                    path = "results/engine")
+plots <- plots_append(plots, weight, name = "Engine/weight", type = "point")
+plots <- plots_append(plots, cylinders, name = "Engine/cylinders", type = "bar")
+```
+
+In RStudio each of those calls also previews the plot at its true output size,
+and so does every `plots_set()` below. That is the `show` argument, on whenever
+the session is interactive; pass `show = FALSE` when adding or tuning several
+plots at once.
+
+```{r}
+plots
+```
+
+In RStudio each name in that listing is a link: click one and the plot opens in
+the viewer. A plot carrying a change is marked with a `*`. `as_tibble()` gives
+the plain tibble underneath.
+
+```{r}
+as_tibble(plots)
+```
+
+## What a plot lets you change
+
+`plots_params()` answers that. It lists each parameter, what kind of value it
+takes, what the plot does without a change, and what it has been changed to.
+
+```{r}
+plots_params(plots, "Engine/weight")
+```
+
+`plots_set()` records a change. The stored plot is not touched — the change sits
+beside it, and `plots_get()` applies it on the way out.
+
+```{r, fig.width = 7, fig.height = 4}
+plots_get(plots, "Engine/weight")
+```
+
+```{r, fig.width = 7, fig.height = 4}
+plots <- plots_set(
+  plots, "Engine/weight",
+  title = "Weight explains most of the mileage gap",
+  caption = "Source: mtcars",
+  width = 8, height = 5
+)
+
+plots_get(plots, "Engine/weight")
+```
+
+```{r}
+# The plot itself still carries the title it was built with.
+plots$plot[[1]]$labels$title
+```
+
+Three things you can do to a parameter, and they are all different:
+
+```{r}
+# Leave it alone: not mentioning it changes nothing.
+# Set it:
+plots <- plots_set(plots, "Engine/weight", subtitle = "All 32 cars")
+# Take it away: NA means the plot should not have one.
+plots <- plots_set(plots, "Engine/weight", subtitle = NA)
+```
+
+`plots_reset()` forgets changes and puts the canvas back to the default for the
+plot's type. What comes back is what the plot always was.
+
+```{r}
+plots <- plots_reset(plots, "Engine/weight", params = "subtitle")
+plots_get(plots, "Engine/weight")$labels$subtitle
+```
+
+A change is checked before it is stored, so a typo fails where you made it
+rather than when the plot is drawn:
+
+```{r, error = TRUE}
+plots_set(plots, "Engine/weight", color = "red")
+```
+
+## Going further than the default
+
+`customizer_default()` offers what any plot has: the labels, their sizes, the
+legend, the gridlines, and a color for each category the plot colors by, read
+off the plot itself. A target line is this plot's own business, and no default
+can know it.
+
+So say what this plot allows. A customizer is two functions. `apply` takes the
+stored plot and the changed values and returns a new plot. `params` takes the
+stored plot and says what may be changed, using the `param_*()` functions.
+Keeping them together is what lets a program offer the right control for each
+parameter without knowing anything about plots. `customizer_extend()` adds them
+to the default rather than replacing it.
+
+```{r}
+targeted <- customizer_extend(
+  customizer_default(),
+  apply = function(plot, target = NULL) {
+    if (is.null(target)) return(plot)
+    plot + geom_hline(yintercept = target, linetype = "dashed")
+  },
+  params = function(plot) {
+    list(target = param_number("Target (mpg)", min = 0, max = 50))
+  }
+)
+```
+
+`apply` may also rebuild a plot rather than add to it, so a customizer is not
+limited to what `ggplot2` lets you add on top — filtering categories or
+reordering them is possible here, and impossible with a layer.
+
+A collection keeps each customizer once, under a name you give it in
+`plots_init()`, and each plot names the one it uses. A plot that names none gets
+`default`, which is `customizer_default()` unless you give your own.
+
+```{r}
+plots <- plots_init(name = "Engine notes", description = "Two plots from mtcars",
+                    path = "results/engine", customizers = list(targeted = targeted))
+plots <- plots_append(plots, weight, name = "Engine/weight", type = "point",
+                      customizer = "targeted")
+plots <- plots_append(plots, cylinders, name = "Engine/cylinders", type = "bar")
+
+names(plots_params(plots, "Engine/weight"))
+```
+
+The target is this plot's alone, and the colors come from the default: one per
+cylinder count, because that is what the plot colors by.
+
+```{r, fig.width = 7, fig.height = 4}
+plots <- plots_set(plots, "Engine/weight", target = 25,
+                   colors = c("4" = "#36c8ef", "6" = "#50bd90", "8" = "#de425b"))
+
+plots_get(plots, "Engine/weight")
+```
+
+
+## Functions the customizers share
+
+A collection is read back in another session, so a customizer may not reach for
+anything that only exists in the session that wrote it:
+
+```{r, error = TRUE}
+house_fill <- function(plot) plot + scale_fill_manual(values = c("#36c8ef", "#50bd90"))
+
+housed <- customizer(
+  apply = function(plot, house = NULL) if (isTRUE(house)) house_fill(plot) else plot,
+  params = function(plot) list(house = param_flag("House colors", default = FALSE))
+)
+plots_init(customizers = list(housed = housed))
+```
+
+Give the collection the function instead. What is in `functions` travels with
+the collection, and every customizer can call it by name, so several customizers
+share one copy of it rather than each repeating it.
+
+```{r}
+shared <- plots_init(customizers = list(housed = housed),
+                     functions = list(house_fill = house_fill))
+plots_meta(shared)$functions
+```
+
+## What a program reads
+
+`plots_params()` returns plain data, one entry per parameter, which is what a
+user interface is built from. `type` decides the control.
+
+| `type` | What it takes | Control |
+|---|---|---|
+| `text` | one string | a box |
+| `number` | one number, with optional `min`, `max`, `step` | a spinner |
+| `flag` | `TRUE` or `FALSE` | a switch |
+| `color` | one color | a picker |
+| `choice` | one of `choices` | a list |
+| `choices` | several of `choices` | a multiple list |
+| `mapping` | a named value per key in `keys`, of the type it maps `to` | one control per key |
+
+```{r}
+str(plots_params(plots, "Engine/weight")$colors)
+```
+
+`default` is what the plot does on its own, `value` is what somebody changed it
+to, and `value` is absent when nobody has. So the state to show is the value if
+there is one, and the default if there is not — and a reset is dropping the
+value.
+
+Every plot also accepts `width` and `height`, whatever its customizer offers.
+The canvas belongs to the collection rather than to any customizer, which is why
+a customizer may not offer those two names.
+
+## Sizing
+
+Because the sizes are ordinary columns, re-sizing every plot of one type is one
+line:
+
+```{r}
+library(dplyr)
+
+plots <- plots |> mutate(height = if_else(type == "bar", 6, height))
+plots
+```
+
+Each type starts from a default you can set for the whole collection.
+
+```{r}
+plots_dims(heatmap = c(18, 11))
+```
+
+## Save the collection
+
+`save_plots()` writes one file per plot, each at its own size, and makes the
+folders in the names.
+
+```{r}
+dir <- file.path(tempdir(), "vignette-plots")
+files <- save_plots(plots, dir = dir)
+
+list.files(dir, recursive = TRUE)
+```
+
+`plots_as_content()` gives the same plots as a table of objects and paths, for
+writers that take one. The paths start with the collection's own `path`. Filter
+the collection to write only some plots, and give `path` here to write somewhere
+else once. `plots_set_path()` moves the collection itself.
+
+```{r}
+plots_as_content(plots)$name
+
+plots_as_content(plots[plots$name == "Engine/weight", ], path = "drafts")$name
+```
+
+## Store it and pick it up again
+
+A collection is an ordinary R object, so it survives a save and a read, changes
+and all. `plots_meta()` says what the collection is.
+
+```{r}
+file <- tempfile(fileext = ".rds")
+saveRDS(plots, file)
+
+back <- readRDS(file)
+str(plots_meta(back))
+plots_params(back, "Engine/weight")$colors$value
+```
+
+One thing is worth knowing before storing a large collection. A ggplot keeps the
+environment it was built in, and saving the plot saves that environment too.
+Plots built at the top level of a script cost little, because the global
+environment is stored by reference: twenty plots over a 4,000 row data frame
+come to under 3 MB. A plot built inside a function instead carries that
+function's local objects, so a builder function that holds a large object in
+scope makes a large file. A complete theme is about 2 MB in `ggplot2` 4.0, so
+the collection keeps each distinct theme once and gives it back to every plot
+that uses it. `plots_meta()` says how many it holds.
+
+## Carry changes back into the script
+
+A stored collection can be changed outside the script that built it, for
+example in a viewer that saves it back. The next run of the script would build
+the collection again without those changes. `plots_changes()` lists them, and
+`plots_changes_code()` writes them as code for the script, after the plots are
+appended. The code starts with `plots_reset()`, so it replaces the script's own
+changes and the rebuilt collection holds exactly the stored ones.
+
+```{r}
+plots_changes(plots)
+
+plots_changes_code(plots)
+```
+
+## Browse the whole collection
+
+`as.gallery()` turns a collection into a gallery, with the slashes in the names
+as its folders. Printing it opens a browsable page in the RStudio viewer.
+
+```{r, eval = FALSE}
+as.gallery(plots)
+```

@@ -24,9 +24,11 @@ gallery <- function(...) {
 #' Convert a list of plots to a gallery
 #'
 #' Plain lists become galleries recursively. Data frames are not treated as
-#' lists of plots.
+#' lists of plots. A plots collection becomes a gallery whose folders are the
+#' slashes in its plot names.
 #'
-#' @param x A ggplot, gallery, or nested plain list of them.
+#' @param x A ggplot, gallery, plots collection, or nested plain list of them.
+#' @param ... Passed on to methods.
 #'
 #' @return A gallery.
 #'
@@ -35,7 +37,12 @@ gallery <- function(...) {
 #' invisible(as.gallery(list(scatter = ggplot(mtcars, aes(wt, mpg)) + geom_point())))
 #'
 #' @export
-as.gallery <- function(x) {
+as.gallery <- function(x, ...) {
+  UseMethod("as.gallery")
+}
+
+#' @export
+as.gallery.default <- function(x, ...) {
   if (inherits(x, "gallery")) {
     return(x)
   }

@@ -46,6 +46,12 @@ ggplot_add.canvas <- function(object, plot, object_name, ...) {
 
 #' @export
 print.ggview <- function(x, ...) {
+  # Without a viewer there is nowhere to show the canvas, so draw the plot the
+  # ordinary way rather than stopping. That keeps a plot printable while
+  # knitting, in a plain console, and under Rscript.
+  if (!rstudioapi::isAvailable()) {
+    return(print(drop_ggview_class(x), ...))
+  }
   ggview(
     plot = x,
     width = x$canvas$width,

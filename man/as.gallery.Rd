@@ -4,17 +4,20 @@
 \alias{as.gallery}
 \title{Convert a list of plots to a gallery}
 \usage{
-as.gallery(x)
+as.gallery(x, ...)
 }
 \arguments{
-\item{x}{A ggplot, gallery, or nested plain list of them.}
+\item{x}{A ggplot, gallery, plots collection, or nested plain list of them.}
+
+\item{...}{Passed on to methods.}
 }
 \value{
 A gallery.
 }
 \description{
 Plain lists become galleries recursively. Data frames are not treated as
-lists of plots.
+lists of plots. A plots collection becomes a gallery whose folders are the
+slashes in its plot names.
 }
 \examples{
 library(ggplot2)
